@@ -54,8 +54,7 @@ const char * fname = R"(C:\Users\Greg Brill\Documents\run1.ubx)";
 
 void dumpPOSLLH(struct POSLLH *  llh)
 {
-	printf("\n\"NAV_POSLLH\":\n{\"TOW\":%d,\n\"lat\":%d,\n\"long\":%d,\n"
-		"\"height\":%d,\n\"hSML\":%d,\n\"hAcc\":%d,\n\"vAcc\":%d\n},",
+	printf(NAV_POSLLH_STRING,
 		llh->TOW,
 		llh->lat,
 		llh->lon,
@@ -87,8 +86,7 @@ void dumpPOSLLH(struct POSLLH *  llh)
 void dumpVELNED(struct VELNED * velned)
 {
 
-	printf("\n\"NAV_VELNED\":{\n\"iTOW\":%d,\n\"velN\":%d,\n\"velE\":%d,\n\"velD\":%d,\n\"gSpeed\":%d,\n"
-		"\"speed\":%d,\n\"cAcc\":%d,\n\"sAcc\":%d,\n\"heading\":%d},\n\n",
+	printf(NAV_VELNED_STRING,
 		velned->iTOW,
 		velned->velN,
 		velned->velE,
@@ -105,15 +103,7 @@ void dumpVELNED(struct VELNED * velned)
 void dumpSTATUS(struct STATUS * status)
 {
 	
-	printf(
-		"\n\"NAV_STATUS\":\n{"
-		"\"time:\":%d,\n"
-		"\"fix_type\":%d,\n"
-		"\"fix_status\":%d,\n"
-		"\"differential_status\":%d,\n"
-		"\"res\":%d,\n"
-		"\"time_to_first_fix\":%d,\n"
-		"\"uptime\":%d}\n",
+	printf(NAV_STATUS_STRING,
 
 		status->time,
 		status->fix_type,
@@ -129,10 +119,7 @@ void dumpSTATUS(struct STATUS * status)
 void dumpSOL(struct SOL * sol)
 {
 
-	printf(
-		"\n\"NAV_SOL\":\n{\"iTOW\":%d,\n\"fTOW\":%d,\n\"week\":%d,\n\"gpsFix\":%d,\n\"flags\":%d,\n"
-		"\"ecefX\":%d,\n\"ecefY\":%d,\n\"ecefZ\":%d,\n\"pAcc\":%d,\n\"ecefVX\":%d,\n\"ecefVY\":%d,\n"
-		"\"ecefVZ\":%d,\n\"sAcc\":%d,\n\"pDOP\":%d,\n\"numSV\":%d},\n\n",
+	printf(NAV_SOL_STRING,
 
 		sol->iTOW,
 		sol->fTOW,
@@ -175,10 +162,10 @@ void readit()
 	struct SOL sol;
 	struct STATUS status;
 	
-	//toggleOut("c:\\temp\\test.json");
+
 	streampos begin, end, current;
 	ifstream myfile(fname, ios::binary);
-	printf("{\n");
+	printf("{\"records\":[\n");
 	while (!myfile.eof())
 	{
 		myfile.read((char*)x, 2);
@@ -224,9 +211,9 @@ void readit()
 
 
 				break;
-			default:
-				;
-				//printf("Not A Nav\n");
+			default:				
+				//normally this is TIM-TP (0x0D 0x01)
+				;// printf("\n--->Not A Nav:msg type %x %x\n", msgtype[0], msgtype[1]);
 
 
 			}
@@ -235,12 +222,14 @@ void readit()
 
 		}
 
-		if ((int)current > 400)
-		{
-			printf("\b}\n");
-			return;
-		}
+		//if ((int)current > 400)
+		//{
+		//	printf("\n{\"EOF\":0}]}\n");
+		//	return;
+		//}
+
 	}
+		printf("\n{\"EOF\":0}]}\n");
 
 
 	//printf("%d %d", x[0], x[1]);
@@ -255,24 +244,25 @@ void readit()
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	struct POSLLH s;
-	//TOW SHOULD be 76700.250
-	struct VELNED v;
-	struct SOL sol;
-	struct STATUS status;
+	//struct POSLLH s;
+	////TOW SHOULD be 76700.250
+	//struct VELNED v;
+	//struct SOL sol;
+	//struct STATUS status;
 
-	//csum(data_llh, sizeof(data));
+	////csum(data_llh, sizeof(data));
 
-	memcpy(&s, (const void *)data_llh, sizeof(data_llh));
-	memcpy(&v, (const void *)data_velned, sizeof(data_velned));
-	memcpy(&sol, (const void *)data_SOL, sizeof(data_SOL));
-	memcpy(&status, (const void *)data_STATUS, sizeof(data_STATUS));
+	//memcpy(&s, (const void *)data_llh, sizeof(data_llh));
+	//memcpy(&v, (const void *)data_velned, sizeof(data_velned));
+	//memcpy(&sol, (const void *)data_SOL, sizeof(data_SOL));
+	//memcpy(&status, (const void *)data_STATUS, sizeof(data_STATUS));
 
+	toggleOut("c:\\temp\\test2.json");
 	readit();
 	return 0;
 
 	//long should be -74.1851071
-	printf("%d %d\n", s.TOW, s.lon);
+	//printf("%d %d\n", s.TOW, s.lon);
 
 	//unsigned char test[4];
 	//unsigned char test2[4];

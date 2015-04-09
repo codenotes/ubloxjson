@@ -2,6 +2,40 @@
 
 #include "windows.h"
 
+enum ubs_protocol_bytes {
+	PREAMBLE1 = 0xb5,
+	PREAMBLE2 = 0x62,
+	CLASS_NAV = 0x01,
+	CLASS_ACK = 0x05,
+	CLASS_CFG = 0x06,
+	CLASS_MON = 0x0A,
+	MSG_ACK_NACK = 0x00,
+	MSG_ACK_ACK = 0x01,
+	MSG_POSLLH = 0x2,
+	MSG_STATUS = 0x3,
+	MSG_SOL = 0x6,
+	MSG_VELNED = 0x12,
+	MSG_CFG_PRT = 0x00,
+	MSG_CFG_RATE = 0x08,
+	MSG_CFG_SET_RATE = 0x01,
+	MSG_CFG_NAV_SETTINGS = 0x24,
+	MSG_CFG_SBAS = 0x16,
+	MSG_MON_HW = 0x09,
+	MSG_MON_HW2 = 0x0B
+};
+enum ubs_nav_fix_type {
+	FIX_NONE = 0,
+	FIX_DEAD_RECKONING = 1,
+	FIX_2D = 2,
+	FIX_3D = 3,
+	FIX_GPS_DEAD_RECKONING = 4,
+	FIX_TIME = 5
+};
+enum ubx_nav_status_bits {
+	NAV_STATUS_FIX_VALID = 1
+};
+
+
 #pragma pack(push,1)
 struct POSLLH
 {
@@ -166,3 +200,33 @@ unsigned char data_llh[] = {// 0xB5, 0x62,
 	0x8F, 0x15, 0x00, 0x00 //vAcc
 
 };
+
+#define NAV_POSLLH_STRING "{\"NAV_POSLLH\":\n{\"TOW\":%d,\n\"lat\":%d,\n\"long\":%d,\n" \
+	"\"height\":%d,\n\"hSML\":%d,\n\"hAcc\":%d,\n\"vAcc\":%d\n}},"
+
+
+#define NAV_VELNED_STRING "{\"NAV_VELNED\":{\n"\
+	"\"iTOW\":%d,\n" \
+	"\"velN\":%d,\n" \
+	"\"velE\":%d,\n" \
+	"\"velD\":%d,\n" \
+	"\"gSpeed\":%d,\n" \
+	"\"speed\":%d,\n" \
+	"\"cAcc\":%d,\n" \
+	"\"sAcc\":%d,\n" \
+	"\"heading\":%d}},\n"
+
+#define NAV_STATUS_STRING \
+	"{\"NAV_STATUS\":\n{" \
+	"\"time:\":%d,\n"\
+	"\"fix_type\":%d,\n"\
+	"\"fix_status\":%d,\n"\
+	"\"differential_status\":%d,\n"\
+	"\"res\":%d,\n"\
+	"\"time_to_first_fix\":%d,\n"\
+	"\"uptime\":%d}},\n"\
+
+#define NAV_SOL_STRING \
+	"{\"NAV_SOL\":\n{\"iTOW\":%d,\n\"fTOW\":%d,\n\"week\":%d,\n\"gpsFix\":%d,\n\"flags\":%d,\n" \
+	"\"ecefX\":%d,\n\"ecefY\":%d,\n\"ecefZ\":%d,\n\"pAcc\":%d,\n\"ecefVX\":%d,\n\"ecefVY\":%d,\n"\
+	"\"ecefVZ\":%d,\n\"sAcc\":%d,\n\"pDOP\":%d,\n\"numSV\":%d}},\n"
