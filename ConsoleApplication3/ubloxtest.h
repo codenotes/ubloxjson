@@ -140,7 +140,7 @@ public:
 
 #pragma pack(pop)
 
-void csum(BYTE * Buffer, int N)
+void csum(BYTE * Buffer, int N, BYTE &b1, BYTE &b2)
 {
 
 	unsigned char CK_A = 0, CK_B = 0;
@@ -151,7 +151,10 @@ void csum(BYTE * Buffer, int N)
 		CK_B = CK_B + CK_A;
 	}
 
-	printf("%x %x\n", CK_A, CK_B);
+	//printf("%x %x\n", CK_A, CK_B);
+	b1 = CK_A;
+	b2 = CK_B;
+
 
 }
 

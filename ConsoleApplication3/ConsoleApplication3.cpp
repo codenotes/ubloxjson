@@ -38,7 +38,7 @@ tow : 76690.750
 
 #endif 
 
-const char * fname = R"(C:\Users\Greg Brill\Documents\run1.ubx)";
+const char * fname = R"(C:\Users\gbrill\Documents\run1.ubx)";
 
 
 /*
@@ -262,7 +262,7 @@ void readit()
 
 HANDLE hSerial;
 
-void openCOM(char * COM="COM2")
+void openCOM(char * COM="COM1")
 {
 	hSerial = CreateFile(COM,
 		GENERIC_READ | GENERIC_WRITE,
@@ -296,13 +296,17 @@ void openCOM(char * COM="COM2")
 
 
 }
+#define MAX_SIZE 512
 
-void writeCOM(Base * b)
+void writeCOM()
 {
 	//char szBuff[n + 1] = { 0 };
 	DWORD dwBytesWritten = 0;
 	std::shared_ptr<msg> p = gMsgs.front();
 	gMsgs.pop_front();
+	BYTE buf[MAX_SIZE];
+	BYTE b1, b2;
+	int size;
 
 	switch (p->type)
 	{
@@ -310,6 +314,26 @@ void writeCOM(Base * b)
 		//
 		printf("pub: %d\n", p->velned.speed);
 		//TODO:recreate the byte stream and send to COM port
+		
+		buf[0] = 0xb5;
+		buf[1] = 0x62;
+		buf[2] = 0x01;
+		buf[3] = 0x12;
+		buf[4] = 36;
+	
+//		size = sizeof(p->velned) + 2; //(+2 because of checksum)
+		memcpy(buf +5,&(p->velned), 36 );
+		csum(buf +2, 38, b1, b2); 
+		buf[36+5] = b1;
+		buf[38 +6 ] = b2;
+		
+		//B5 62 01 12 24 22 10 92 04 09 00 00 00 0D 00 00 00 3D 00 00 00 3F 00 00 00 10 00 00 00 00 00 00 00 47 00 00 00 94 23 BB 00 5A CC CC 
+		
+		//dumpVELNED( (VELNED*) buf + 4 );
+
+		WriteFile(hSerial, buf, 43, &dwBytesWritten, 0);
+
+	
 		break;
 
 	case 0x2: //LLH
@@ -325,7 +349,8 @@ void writeCOM(Base * b)
 
 
 	case 0x6: //SOL
-		//myfile.read((char*)&sol, length);//+2 is the checksum
+		//myfile.read((char*)&sol, length);//+2 is the 
+		
 		//dumpSOL(&sol);
 
 		break;
@@ -335,10 +360,10 @@ void writeCOM(Base * b)
 
 
 	//end
-	if (!WriteFile(hSerial, &m, n, &dwBytesWritten, NULL))
-	{
-		//error occurred. Report to user.
-	}
+	//if (!WriteFile(hSerial, &m, n, &dwBytesWritten, NULL))
+	//{
+	//	//error occurred. Report to user.
+	//}
 }
 
 DWORD pubThread(LPVOID lpdwThreadParam)
@@ -348,9 +373,9 @@ DWORD pubThread(LPVOID lpdwThreadParam)
 		if (gMsgs.size() == 0) continue;
 
 	
-
+		writeCOM();
 	
-		Sleep(20);
+		Sleep(1000);
 	}
 
 	return 0;
@@ -360,6 +385,9 @@ DWORD pubThread(LPVOID lpdwThreadParam)
 int _tmain(int argc, _TCHAR* argv[])
 {
 	DWORD dwThreadId;
+
+	//B5 62 01 12 22 10 92 04 09 00 00 00 0D 00 00 00 3D 00 00 00 3F 00 00 00 10 00 00 00 00 00 00 00 47 00 00 00 23 77 BB 00
+	//01 12 22 10 92 04 09 00 00 00 0D 00 00 00 3D 00 00 00 3F 00 00 00 10 00 00 00 00 00 00 00 47 00 00 00 23 77
 	//struct POSLLH s;
 	////TOW SHOULD be 76700.250
 	//struct VELNED v;
@@ -382,8 +410,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		&dwThreadId //Thread Id
 		);
 
-
-	//toggleOut("c:\\temp\\test2.json");
+	openCOM("COM1");
+	//toggleOut("c:\\temp\\junk.json");
 	readit();
 	WaitForSingleObject(h, INFINITE);
 	return 0;
