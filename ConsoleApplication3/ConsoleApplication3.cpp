@@ -260,6 +260,86 @@ void readit()
 
 }
 
+HANDLE hSerial;
+
+void openCOM(char * COM="COM2")
+{
+	hSerial = CreateFile(COM,
+		GENERIC_READ | GENERIC_WRITE,
+		0,
+		0,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		0);
+	if (hSerial == INVALID_HANDLE_VALUE)
+	{
+		if (GetLastError() == ERROR_FILE_NOT_FOUND)
+		{
+			//serial port does not exist. Inform user.
+		}
+		//some other error occurred. Inform user.
+	}
+
+
+	DCB dcbSerialParams = { 0 };
+	dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
+	if (!GetCommState(hSerial, &dcbSerialParams)) {
+		//error getting state
+	}
+	dcbSerialParams.BaudRate = CBR_38400;
+	dcbSerialParams.ByteSize = 8;
+	dcbSerialParams.StopBits = ONESTOPBIT;
+	dcbSerialParams.Parity = NOPARITY;
+	if (!SetCommState(hSerial, &dcbSerialParams)){
+		//error setting serial port state
+	}
+
+
+}
+
+void writeCOM(Base * b)
+{
+	//char szBuff[n + 1] = { 0 };
+	DWORD dwBytesWritten = 0;
+	std::shared_ptr<msg> p = gMsgs.front();
+	gMsgs.pop_front();
+
+	switch (p->type)
+	{
+	case 0x12: //velned
+		//
+		printf("pub: %d\n", p->velned.speed);
+		//TODO:recreate the byte stream and send to COM port
+		break;
+
+	case 0x2: //LLH
+		//printf("LLH begin at:%d, reading:%d\n",(int)current, length);
+		//	myfile.read((char*)&llh, length);//+2 is the checksum
+		//dumpPOSLLH(&llh);
+		break;
+
+	case 0x3://status
+		//myfile.read((char*)&status, length);//+2 is the checksum
+		//dumpSTATUS(&status);
+		break;
+
+
+	case 0x6: //SOL
+		//myfile.read((char*)&sol, length);//+2 is the checksum
+		//dumpSOL(&sol);
+
+		break;
+
+
+	}
+
+
+	//end
+	if (!WriteFile(hSerial, &m, n, &dwBytesWritten, NULL))
+	{
+		//error occurred. Report to user.
+	}
+}
 
 DWORD pubThread(LPVOID lpdwThreadParam)
 {
@@ -267,35 +347,7 @@ DWORD pubThread(LPVOID lpdwThreadParam)
 	{
 		if (gMsgs.size() == 0) continue;
 
-		std::shared_ptr<msg> p = gMsgs.front();
-		gMsgs.pop_front();
-
-		switch (p->type)
-		{
-		case 0x12: //velned
-			printf("pub: %d\n", p->velned.speed);
-			break;
-
-		case 0x2: //LLH
-			//printf("LLH begin at:%d, reading:%d\n",(int)current, length);
-		//	myfile.read((char*)&llh, length);//+2 is the checksum
-			//dumpPOSLLH(&llh);
-			break;
-
-		case 0x3://status
-			//myfile.read((char*)&status, length);//+2 is the checksum
-			//dumpSTATUS(&status);
-			break;
-
-		
-		case 0x6: //SOL
-			//myfile.read((char*)&sol, length);//+2 is the checksum
-			//dumpSOL(&sol);
-
-			break;
-
-
-		}
+	
 
 	
 		Sleep(20);
