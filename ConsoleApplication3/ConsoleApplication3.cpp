@@ -6,6 +6,13 @@
 
 using namespace std;
 
+#include <memory>
+//#include <vector>
+#include <deque>
+
+std::deque<std::shared_ptr<msg>> gMsgs;
+
+
 
 #if 0
 tow : 76690.750
@@ -31,7 +38,7 @@ tow : 76690.750
 
 #endif 
 
-const char * fname = R"(C:\Users\gbrill\Documents\run1.ubx)";
+const char * fname = R"(C:\Users\Greg Brill\Documents\run1.ubx)";
 
 
 /*
@@ -96,6 +103,18 @@ void dumpVELNED(struct VELNED * velned)
 		velned->cAcc,
 		velned->sAcc,
 		velned->heading);
+
+	msg * m = new msg;
+	m->type = 0x12;
+	m->velned = *velned;
+	std::shared_ptr<msg> p(m);
+	gMsgs.push_back(p);
+
+	/*VELNED * v2=new VELNED;
+	*v2 = *velned;
+	std::shared_ptr<Base> p(v2);
+	gMsgs.push_back(p);
+	*/
 
 
 }
@@ -241,9 +260,106 @@ void readit()
 
 }
 
+HANDLE hSerial;
+
+void openCOM(char * COM="COM2")
+{
+	hSerial = CreateFile(COM,
+		GENERIC_READ | GENERIC_WRITE,
+		0,
+		0,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		0);
+	if (hSerial == INVALID_HANDLE_VALUE)
+	{
+		if (GetLastError() == ERROR_FILE_NOT_FOUND)
+		{
+			//serial port does not exist. Inform user.
+		}
+		//some other error occurred. Inform user.
+	}
+
+
+	DCB dcbSerialParams = { 0 };
+	dcbSerialParams.DCBlength = sizeof(dcbSerialParams);
+	if (!GetCommState(hSerial, &dcbSerialParams)) {
+		//error getting state
+	}
+	dcbSerialParams.BaudRate = CBR_38400;
+	dcbSerialParams.ByteSize = 8;
+	dcbSerialParams.StopBits = ONESTOPBIT;
+	dcbSerialParams.Parity = NOPARITY;
+	if (!SetCommState(hSerial, &dcbSerialParams)){
+		//error setting serial port state
+	}
+
+
+}
+
+void writeCOM(Base * b)
+{
+	//char szBuff[n + 1] = { 0 };
+	DWORD dwBytesWritten = 0;
+	std::shared_ptr<msg> p = gMsgs.front();
+	gMsgs.pop_front();
+
+	switch (p->type)
+	{
+	case 0x12: //velned
+		//
+		printf("pub: %d\n", p->velned.speed);
+		//TODO:recreate the byte stream and send to COM port
+		break;
+
+	case 0x2: //LLH
+		//printf("LLH begin at:%d, reading:%d\n",(int)current, length);
+		//	myfile.read((char*)&llh, length);//+2 is the checksum
+		//dumpPOSLLH(&llh);
+		break;
+
+	case 0x3://status
+		//myfile.read((char*)&status, length);//+2 is the checksum
+		//dumpSTATUS(&status);
+		break;
+
+
+	case 0x6: //SOL
+		//myfile.read((char*)&sol, length);//+2 is the checksum
+		//dumpSOL(&sol);
+
+		break;
+
+
+	}
+
+
+	//end
+	if (!WriteFile(hSerial, &m, n, &dwBytesWritten, NULL))
+	{
+		//error occurred. Report to user.
+	}
+}
+
+DWORD pubThread(LPVOID lpdwThreadParam)
+{
+	while (true)
+	{
+		if (gMsgs.size() == 0) continue;
+
+	
+
+	
+		Sleep(20);
+	}
+
+	return 0;
+}
+
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	DWORD dwThreadId;
 	//struct POSLLH s;
 	////TOW SHOULD be 76700.250
 	//struct VELNED v;
@@ -257,8 +373,19 @@ int _tmain(int argc, _TCHAR* argv[])
 	//memcpy(&sol, (const void *)data_SOL, sizeof(data_SOL));
 	//memcpy(&status, (const void *)data_STATUS, sizeof(data_STATUS));
 
+	HANDLE h=CreateThread(NULL, //Choose default security
+		0, //Default stack size
+		(LPTHREAD_START_ROUTINE)&pubThread,
+		//Routine to execute
+		(LPVOID)0, //Thread parameter
+		0, //Immediately run the thread
+		&dwThreadId //Thread Id
+		);
+
+
 	//toggleOut("c:\\temp\\test2.json");
 	readit();
+	WaitForSingleObject(h, INFINITE);
 	return 0;
 
 	//long should be -74.1851071
