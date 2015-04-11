@@ -31,7 +31,7 @@ tow : 76690.750
 
 #endif 
 
-const char * fname = R"(C:\Users\Greg Brill\Documents\run1.ubx)";
+const char * fname = R"(C:\Users\gbrill\Documents\run1.ubx)";
 
 
 /*
@@ -257,7 +257,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//memcpy(&sol, (const void *)data_SOL, sizeof(data_SOL));
 	//memcpy(&status, (const void *)data_STATUS, sizeof(data_STATUS));
 
-	toggleOut("c:\\temp\\test2.json");
+	//toggleOut("c:\\temp\\test2.json");
 	readit();
 	return 0;
 
