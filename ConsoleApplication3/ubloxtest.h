@@ -2,6 +2,11 @@
 
 #include "windows.h"
 
+struct Base
+{
+
+};
+
 enum ubs_protocol_bytes {
 	PREAMBLE1 = 0xb5,
 	PREAMBLE2 = 0x62,
@@ -66,7 +71,7 @@ BYTE data_velned[] = {
 
 };
 
-struct VELNED
+struct VELNED: Base
 {
 	ULONG iTOW;
 	LONG velN;
@@ -79,7 +84,7 @@ struct VELNED
 	ULONG cAcc;
 };
 
-struct SOL
+struct SOL: Base
 {
 	ULONG iTOW;
 	LONG fTOW;
@@ -113,7 +118,7 @@ struct SOL
 //
 //};
 
-struct  STATUS {
+struct  STATUS: Base {
 	ULONG time;                                  // GPS msToW
 	BYTE  fix_type;
 	BYTE  fix_status;
@@ -121,6 +126,16 @@ struct  STATUS {
 	BYTE  res;
 	ULONG time_to_first_fix;
 	ULONG uptime;
+};
+
+
+class msg
+{
+public:
+	int type;
+	VELNED velned;
+	SOL sol;
+	POSLLH posllh;
 };
 
 #pragma pack(pop)
@@ -230,3 +245,8 @@ unsigned char data_llh[] = {// 0xB5, 0x62,
 	"{\"NAV_SOL\":\n{\"iTOW\":%d,\n\"fTOW\":%d,\n\"week\":%d,\n\"gpsFix\":%d,\n\"flags\":%d,\n" \
 	"\"ecefX\":%d,\n\"ecefY\":%d,\n\"ecefZ\":%d,\n\"pAcc\":%d,\n\"ecefVX\":%d,\n\"ecefVY\":%d,\n"\
 	"\"ecefVZ\":%d,\n\"sAcc\":%d,\n\"pDOP\":%d,\n\"numSV\":%d}},\n"
+
+
+
+
+DWORD pubThread(LPVOID lpdwThreadParam);
