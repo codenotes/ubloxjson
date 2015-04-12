@@ -2,6 +2,24 @@
 
 #include "windows.h"
 
+
+#define VELNED_LENGTH	36
+#define SOL_LENGTH		52
+#define STATUS_LENGTH	16
+#define POSLLH_LENGTH			28
+#define TP_LENGTH	16
+
+#define VELNED_TYPE 0x12
+#define SOL_TYPE	0x06
+#define STATUS_TYPE	0x03
+#define POSLLH_TYPE 0x02
+#define TP_TYPE		0x01
+
+#define NAV_CLASS	0x01
+#define TIME_CLASS	0x0d
+#define SLEEP_TIME	50
+
+
 struct Base
 {
 
@@ -106,6 +124,16 @@ struct SOL: Base
 
 };
 
+struct TP : Base
+{
+	ULONG towMS;
+	ULONG towSubMS;
+	LONG qErr;
+	USHORT week;
+	BYTE flags;
+	unsigned char reserved1;
+};
+
 //struct STATUS
 //{
 //	ULONG	iTOW;
@@ -132,11 +160,13 @@ struct  STATUS: Base {
 class msg
 {
 public:
+	int msgClass;
 	int type;
 	VELNED velned;
 	SOL sol;
 	POSLLH posllh;
 	STATUS status;
+	TP tp;
 };
 
 #pragma pack(pop)
@@ -170,10 +200,6 @@ void csum(BYTE * Buffer, int N, BYTE &b1, BYTE &b2)
 //Heading:		13.22
 
 
-#define VELNED_LENGTH	36
-#define SOL_LENGTH		10
-#define STATUS_LENGTH	52
-#define POSLLH_LENGTH			28
 
 BYTE data_STATUS[] =
 {
@@ -252,6 +278,14 @@ unsigned char data_llh[] = {// 0xB5, 0x62,
 	"{\"NAV_SOL\":\n{\"iTOW\":%d,\n\"fTOW\":%d,\n\"week\":%d,\n\"gpsFix\":%d,\n\"flags\":%d,\n" \
 	"\"ecefX\":%d,\n\"ecefY\":%d,\n\"ecefZ\":%d,\n\"pAcc\":%d,\n\"ecefVX\":%d,\n\"ecefVY\":%d,\n"\
 	"\"ecefVZ\":%d,\n\"sAcc\":%d,\n\"pDOP\":%d,\n\"numSV\":%d}},\n"
+
+
+#define TIME_TP_STRING "{\"TIME_TP\":{\n"\
+	"\"towMS\":%d,\n" \
+	"\"towSubMS\":%d,\n" \
+	"\"qErr\":%d,\n" \
+	"\"week\":%d,\n" \
+	"\"flags\":%d}},\n"
 
 
 
