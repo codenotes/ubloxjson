@@ -327,11 +327,12 @@ void writeCOM()
 		buf[36+5] = b1;
 		buf[38 +6 ] = b2;
 		
-		//B5 62 01 12 24 22 10 92 04 09 00 00 00 0D 00 00 00 3D 00 00 00 3F 00 00 00 10 00 00 00 00 00 00 00 47 00 00 00 94 23 BB 00 5A CC CC 
-		
+		//B5 62 01 12 24 22 10 92 04 09 00 00 00 0D 00 00 00 3D 00 00 00 3F 00 00 00 10 00 00 00 00 00 00 00 47 00 00 00 94 23 BB 00 5A CC  
+		//B5 62 01 12 24 
+		//52 85 92 04 18 FF FF FF 6C FF FF FF BE 00 00 00 4F 01 00 00 14 01 00 00 51 64 4C 01 8B 00 00 00 86 40 1B 00 B3 CC 
 		//dumpVELNED( (VELNED*) buf + 4 );
 
-		WriteFile(hSerial, buf, 43, &dwBytesWritten, 0);
+		WriteFile(hSerial, buf, 36+7, &dwBytesWritten, 0); //7 is 2 chck, 2 sync, 1 len, 1 class, 1 type
 
 	
 		break;
