@@ -225,14 +225,22 @@ void readit()
 					dumpSOL(&sol);
 
 					break;
+
+				default:
+					printf("{\"UKNOWN NAV TYPE\":\n{\"class\":%d,\n\"type\":%d}},\n",
+						msgtype[0], msgtype[1]);
+					break;
 				}
 
 
 
-				break;
-			default:				
+			
+			default:	
+				printf("{\"UKNOWN CLASS\":\n{\"class\":%d,\n\"type\":%d}},\n",
+					msgtype[0], msgtype[1]);
+
 				//normally this is TIM-TP (0x0D 0x01)
-				;// printf("\n--->Not A Nav:msg type %x %x\n", msgtype[0], msgtype[1]);
+				break;// printf("\n--->Not A Nav:msg type %x %x\n", msgtype[0], msgtype[1]);
 
 
 			}
@@ -298,6 +306,30 @@ void openCOM(char * COM="COM1")
 }
 #define MAX_SIZE 512
 
+void sendCOM(int type, int length, void * inbuff)
+{
+
+	DWORD dwBytesWritten = 0;
+	
+	BYTE buf[MAX_SIZE];
+	BYTE b1, b2;
+
+	buf[2] = 0x01;
+	buf[3] = type;
+	buf[4] = length;
+	buf[5] = 0;
+
+	memcpy(buf + 6, inbuff, length);
+	csum(buf + 2, 2 + 2 + length, b1, b2);
+	buf[2 + 2 + 2 + length] = b1;
+	buf[2 + 2 + 2 + length + 1] = b2;
+
+	//2 start, 2 classifier, 2 size,  payload, 2 checksum = 44
+	WriteFile(hSerial, buf, 2 + 2 + 2 + length + 2, &dwBytesWritten, 0);
+
+}
+
+
 void writeCOM()
 {
 	//char szBuff[n + 1] = { 0 };
@@ -308,52 +340,41 @@ void writeCOM()
 	BYTE b1, b2;
 	int size;
 
+	buf[0] = 0xb5;
+	buf[1] = 0x62;
+
+	printf("pub:\n");
+
 	switch (p->type)
 	{
 	case 0x12: //velned
-		//
-		printf("pub: %d\n", p->velned.speed);
-		//TODO:recreate the byte stream and send to COM port
 		
-		buf[0] = 0xb5;
-		buf[1] = 0x62;
 		buf[2] = 0x01;
 		buf[3] = 0x12;
-		buf[4] = 36;
+		buf[4] = VELNED_LENGTH;
+		buf[5] = 0;
 	
-//		size = sizeof(p->velned) + 2; //(+2 because of checksum)
-		memcpy(buf +5,&(p->velned), 36 );
-		csum(buf +2, 38, b1, b2); 
-		buf[36+5] = b1;
-		buf[38 +6 ] = b2;
+		memcpy(buf + 6, &(p->velned), VELNED_LENGTH);
+		csum(buf + 2, 2 + 2 + VELNED_LENGTH, b1, b2);
+		buf[2 + 2 + 2 + VELNED_LENGTH] = b1;
+		buf[2 + 2 + 2 + VELNED_LENGTH + 1] = b2;
 		
-		//B5 62 01 12 24 22 10 92 04 09 00 00 00 0D 00 00 00 3D 00 00 00 3F 00 00 00 10 00 00 00 00 00 00 00 47 00 00 00 94 23 BB 00 5A CC  
-		//B5 62 01 12 24 
-		//52 85 92 04 18 FF FF FF 6C FF FF FF BE 00 00 00 4F 01 00 00 14 01 00 00 51 64 4C 01 8B 00 00 00 86 40 1B 00 B3 CC 
-		//dumpVELNED( (VELNED*) buf + 4 );
-
-		WriteFile(hSerial, buf, 36+7, &dwBytesWritten, 0); //7 is 2 chck, 2 sync, 1 len, 1 class, 1 type
-
+		//2 start, 2 classifier, 2 size, 36 payload, 2 checksum = 44
+		WriteFile(hSerial, buf, 44, &dwBytesWritten, 0);
+		
+		//WriteFile(hSerial, data_STATUS, sizeof(data_STATUS), &dwBytesWritten, 0);
 	
 		break;
 
 	case 0x2: //LLH
-		//printf("LLH begin at:%d, reading:%d\n",(int)current, length);
-		//	myfile.read((char*)&llh, length);//+2 is the checksum
-		//dumpPOSLLH(&llh);
+		sendCOM(0x02, POSLLH_LENGTH, &p->posllh);
 		break;
 
 	case 0x3://status
-		//myfile.read((char*)&status, length);//+2 is the checksum
-		//dumpSTATUS(&status);
-		break;
-
+		sendCOM(0x03, STATUS_LENGTH, &p->status);
 
 	case 0x6: //SOL
-		//myfile.read((char*)&sol, length);//+2 is the 
-		
-		//dumpSOL(&sol);
-
+		sendCOM(0x06, SOL_LENGTH, &p->sol);
 		break;
 
 
@@ -387,9 +408,10 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	DWORD dwThreadId;
 
-	//B5 62 01 12 22 10 92 04 09 00 00 00 0D 00 00 00 3D 00 00 00 3F 00 00 00 10 00 00 00 00 00 00 00 47 00 00 00 23 77 BB 00
-	//01 12 22 10 92 04 09 00 00 00 0D 00 00 00 3D 00 00 00 3F 00 00 00 10 00 00 00 00 00 00 00 47 00 00 00 23 77
-	//struct POSLLH s;
+	//{01 12 24 22 10 92 04 09 00 00 00 0D 00 00 00 3D 00 00 00 3F 00 00 00 10 00 00 00 00 00 00 00 47 00 00 00 94 23 BB 00};
+
+
+		//struct POSLLH s;
 	////TOW SHOULD be 76700.250
 	//struct VELNED v;
 	//struct SOL sol;
@@ -411,7 +433,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		&dwThreadId //Thread Id
 		);
 
-	openCOM("COM1");
+	openCOM("COM2");
 	//toggleOut("c:\\temp\\junk.json");
 	readit();
 	WaitForSingleObject(h, INFINITE);
