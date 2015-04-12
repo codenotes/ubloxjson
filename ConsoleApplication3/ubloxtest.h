@@ -136,6 +136,7 @@ public:
 	VELNED velned;
 	SOL sol;
 	POSLLH posllh;
+	STATUS status;
 };
 
 #pragma pack(pop)
@@ -169,19 +170,22 @@ void csum(BYTE * Buffer, int N, BYTE &b1, BYTE &b2)
 //Heading:		13.22
 
 
-
+#define VELNED_LENGTH	36
+#define SOL_LENGTH		10
+#define STATUS_LENGTH	52
+#define POSLLH_LENGTH			28
 
 BYTE data_STATUS[] =
 {
-	//	B5 62 01 03 10 00 
+	0xB5, 0x62, 0x01, 0x03, 0x10, 0x00, 
 	0xCA, 0x71, 0x92, 0x04,
 	0x03,
 	0xDD,
 	0x00,
 	0x00,
 	0xF5, 0x0B, 0x00, 0x00,
-	0xEB, 0xDD, 0x00, 0x00
-	//8D B7                        
+	0xEB, 0xDD, 0x00, 0x00,
+	0x8D,0xB7                        
 };
 
 BYTE data_SOL[] = {
