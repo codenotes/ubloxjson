@@ -17,5 +17,10 @@
 #include <fstream>
 #include <iostream>
 
+#include <memory>
+#include <vector>
+#include <deque>
+#include <sstream>
+#include <algorithm>
 
 // TODO: reference additional headers your program requires here

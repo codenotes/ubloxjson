@@ -2,14 +2,10 @@
 // ubloxtest.cpp : Defines the entry point for the console application.
 //
 #include "ubloxtest.h"
-
+#include "memstream.h"
 
 using namespace std;
 
-#include <memory>
-//#include <vector>
-#include <deque>
-#include <sstream>
 
 std::deque<std::shared_ptr<msg>> gMsgs;
 
@@ -218,7 +214,7 @@ void toggleOut(char * fname)
 
 }
 
-void readit()
+void readit(istream &myfile)
 {
 	unsigned char x[2];
 	unsigned char msgtype[2];//class / ID
@@ -230,9 +226,9 @@ void readit()
 	struct TP tp;
 
 	
-
+	
 	streampos begin, end, current;
-	ifstream myfile(fname, ios::binary);
+	//ifstream myfile(fname, ios::binary);
 	printf("{\"records\":[\n");
 	while (!myfile.eof())
 	{
@@ -494,18 +490,117 @@ DWORD pubThread(LPVOID lpdwThreadParam)
 }
 
 
+
+
+
+void hexifydump(char * HEXStr)
+{
+	
+	std::string str(HEXStr);
+//	std::string::iterator pend=
+		
+	str.erase(remove_if(str.begin(), str.end(), isspace), str.end());
+
+	
+	
+
+//	cout << str << "!!\n";
+	int len = str.length();
+
+
+	
+	char * buf = new char[len+1];
+	strcpy(buf, str.c_str());
+	
+
+		int i, n;
+		//char *HEXStr = "A4505D0B0F6AEDAA";
+		//unsigned char tmpByte[255];
+
+
+		unsigned char * tmpByte = new unsigned char[len+1];
+
+
+		char backHex[255];
+
+		for (i = 0; i < len; i++) {
+			sscanf(buf+2 * i, "%2X", &n);
+			tmpByte[i] = (char)n;
+			
+		}
+
+		//for (i = 0; i < len; i++)
+		//	sprintf(backHex + 2 * i, "%02X", tmpByte[i]);
+		//
+		//backHex[len] = '\0';
+		//
+		memstream s(tmpByte, len);
+		readit(s);
+	//	printf("%s\n", backHex);
+
+		
+
+		
+
+		//dumpVELNED((VELNED*)(tmpByte));
+
+		
+
+}
+
+void LoadGPSEmulator(char * filename)
+{
+
+	ifstream myReadFile(filename);
+	std::string s, all;
+	basic_string <char>::size_type look;
+
+	char output[512];
+	if (myReadFile.is_open()) 
+	{
+		while (!myReadFile.eof()) 
+		{
+			
+			getline(myReadFile, s);
+			//myReadFile >> output;
+			//cout << output<<endl;
+			
+			if (s.length()>1)
+				if (s[1] == '*')
+					continue;
+
+			look = s.find(":");
+			if (look!= string::npos)
+			{
+
+				s = s.substr(look+1);
+			
+			}
+
+
+			all += s; 
+
+			//cout << s<<endl;
+
+
+		}
+	}
+	myReadFile.close();
+
+	hexifydump((char*)all.c_str());
+
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	DWORD dwThreadId;
 
 	//{01 12 24 22 10 92 04 09 00 00 00 0D 00 00 00 3D 00 00 00 3F 00 00 00 10 00 00 00 00 00 00 00 47 00 00 00 94 23 BB 00};
 	stringstream ss;
-
-	char data[] = "\x01\x0D";
-
-	strcpy(data, "\xDD\xFF");
-
-	
+	LoadGPSEmulator(R"(C:\Users\GBrill\Dropbox\lib\ublox\emu.txt)");
+	// //removed this
+	//hexifydump("B5 62 01 12 24 00 CB 14 4B 13 FC 06 00 00 00 00 00 00 00 00 00 00 FC 06 00 00 FC 06 00 00 00 00 00 00 11 01 00 00 00 51 25 02 04 33");
+	return 0;
 
 
 		//struct POSLLH s;
@@ -525,10 +620,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	openCOM("COM1");
 //	toggleOut("c:\\temp\\junk.json");
-	gVerbose=false;
-	readit();
+	gVerbose=true;
+	ifstream myfile(fname, ios::binary);
+	readit(myfile);
 	
-#if 1	
+#if 0	
 	HANDLE h = CreateThread(NULL, //Choose default security
 		0, //Default stack size
 		(LPTHREAD_START_ROUTINE)&pubThread,
