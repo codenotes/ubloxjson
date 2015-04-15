@@ -2,6 +2,7 @@
 // ubloxtest.cpp : Defines the entry point for the console application.
 //
 #include "ubloxtest.h"
+#include "optionparser.h"
 
 
 using namespace std;
