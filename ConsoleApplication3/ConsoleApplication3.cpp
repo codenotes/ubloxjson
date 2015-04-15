@@ -536,6 +536,7 @@ void hexifydump(char * HEXStr)
 		//
 		memstream s(tmpByte, len);
 		readit(s);
+		delete tmpByte;
 	//	printf("%s\n", backHex);
 
 		
@@ -554,6 +555,10 @@ void LoadGPSEmulator(char * filename)
 	ifstream myReadFile(filename);
 	std::string s, all;
 	basic_string <char>::size_type look;
+
+	
+
+
 
 	char output[512];
 	if (myReadFile.is_open()) 
@@ -580,6 +585,7 @@ void LoadGPSEmulator(char * filename)
 
 			all += s; 
 
+			
 			//cout << s<<endl;
 
 
