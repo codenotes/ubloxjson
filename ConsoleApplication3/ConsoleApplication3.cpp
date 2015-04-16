@@ -600,7 +600,7 @@ void LoadGPSEmulator(char * filename)
 
 
 
-enum  optionIndex { UNKNOWN, HELP, CONVERT, NUMERIC2, FILEOUT, FILEIN, NUMERIC, NONEMPTY };
+enum  optionIndex { UNKNOWN, HELP, COM, FREQ, NUMERIC2, FILEOUT, FILEIN, NUMERIC, NONEMPTY };
 const option::Descriptor usage[] =
 {
 	{ UNKNOWN, 0, "", "", option::Arg::None, "USAGE: example [options]\n\n"
@@ -608,6 +608,8 @@ const option::Descriptor usage[] =
 	{ HELP, 0, "", "help", option::Arg::None, "  --help  \tPrint usage and exit." },
 	{ FILEIN, 0, "f", "filein", Arg::Required, "  --filename=ublox bin file \trequired, the ublox binary file  \tMust have an argument." },
 	{ FILEOUT, 0, "o", "fileout", Arg::Optional, "  --fileout=json ouput file, \toptional, ublox JSON outputfile  \tIf empty, outputs to screen." },
+	{ COM, 0, "c", "comport", Arg::Optional, "  --COM port=COM{1-N|, \toptional  \tStreams to COM port." },
+	{ FREQ, 0, "f", "freq", Arg::Optional, "  --freq=freq output in hz, \toptional" },
 	{ UNKNOWN, 0, "", "", option::Arg::None, "\nExamples:\n"
 	"  example --unknown -- --this_is_no_option\n"
 	"  example -unk --plus -ppp file1 file2\n" },
@@ -625,6 +627,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	option::Option* buffer  = new option::Option[stats.buffer_max];
 	option::Parser parse(usage, argc, argv, options, buffer);
 
+	string filein, fileout, com, freq;
+
 	if (parse.error())
 	  return 1;
 
@@ -636,29 +640,89 @@ int _tmain(int argc, _TCHAR* argv[])
 	for (int i = 0; i < parse.optionsCount(); ++i)
 	  {
 		option::Option& opt = buffer[i];
-		fprintf(stdout, "Argument #%d is ", i);
+	//	fprintf(stdout, "Argument #%d is ", i);
 		switch (opt.index())
 		{
 		  case HELP:
 			// not possible, because handled further above and exits the program
-		  case FILEIN:
-			fprintf(stdout, "--ublox filein '%s'\n", opt.arg);
-			break;
+		  case COM:
+			  com = opt.arg;
+
+			  break;
+
+		  case FREQ:
+			  freq = opt.arg;
+
+			  break;
 
 		  case FILEOUT:
-			if (opt.arg)
-			  fprintf(stdout, "--JSON out, optional '%s'\n", opt.arg);
-			else
-			  fprintf(stdout, "--No argument, that's a problem.\n");
+			  if (opt.arg)
+			  {
+				  fileout = opt.arg;
+
+			//	fprintf(stdout, "--JSON out, optional '%s'!\n", opt.arg);
+			  }
+			  else
+			  {
+				  fileout = "";
+				fprintf(stdout, "--No argument for outputfile, that's a problem.\n");
+			  }
 			break;
+		 
+		  case FILEIN:
+			  filein = opt.arg;
+
+			 // fprintf(stdout, "--ublox filein '%s'\n", opt.arg);
+		 
+			  break;
+
+		  default:
+			  filein = "";
+			  fileout = "";
+
 
 		}
 	  }
 
+	if (!filein.empty())
+	{
+
+		if (!com.empty())
+		{
+			cout << "Com port enabled:" << com << endl;
+			if (!freq.empty())
+			{
+
+				cout << "freq:" << freq << endl;
+			}
+			else
+			{
+				freq = "5"; //5hz default
+			}
+
+
+		}
+
+		if (!fileout.empty())
+		{
+			cout << "we have an in and out\n";
+			cout << filein << " " << fileout << "\n";
+//			toggleOut((char*)fileout.c_str());
+//			LoadGPSEmulator((char*)filein.c_str());
+		}
+		else
+		{
+
+			cout << "Just filein:"<<filein << endl; // << " " << fileout << endl;
+//			LoadGPSEmulator((char*)filein.c_str()); //this will go to screen as there is no toggleout. 
+
+		}
+
+	}
 
 	delete[] options;
 	delete[] buffer;
-
+	
 return 0;
 	DWORD dwThreadId;
 
