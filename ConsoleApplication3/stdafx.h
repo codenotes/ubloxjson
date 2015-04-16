@@ -17,5 +17,11 @@
 #include <fstream>
 #include <iostream>
 
+#include <memory>
+#include <vector>
+#include <deque>
+#include <sstream>
+#include <algorithm>
+//#include "ezoptionparser.h"
 
 // TODO: reference additional headers your program requires here

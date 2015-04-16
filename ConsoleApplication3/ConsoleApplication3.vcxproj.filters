@@ -33,7 +33,7 @@
     <ClInclude Include="ap_gps_ublox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="optionparser.h">
+    <ClInclude Include="memstream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -48,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AP_GPS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="memstream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
