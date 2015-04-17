@@ -600,15 +600,16 @@ void LoadGPSEmulator(char * filename)
 
 
 
-enum  optionIndex { UNKNOWN, HELP, COM, FREQ, NUMERIC2, FILEOUT, FILEIN, NUMERIC, NONEMPTY };
+enum  optionIndex { UNKNOWN, HELP, FILEIN, COM, GPSFILE, FILEOUT2, FREQ, NUMERIC2, NUMERIC, NONEMPTY };
 const option::Descriptor usage[] =
 {
 	{ UNKNOWN, 0, "", "", option::Arg::None, "USAGE: example [options]\n\n"
 	"Options:" },
 	{ HELP, 0, "", "help", option::Arg::None, "  --help  \tPrint usage and exit." },
 	{ FILEIN, 0, "f", "filein", Arg::Required, "  --filename=ublox bin file \trequired, the ublox binary file  \tMust have an argument." },
-	{ FILEOUT, 0, "o", "fileout", Arg::Optional, "  --fileout=json ouput file, \toptional, ublox JSON outputfile  \tIf empty, outputs to screen." },
 	{ COM, 0, "c", "comport", Arg::Optional, "  --COM port=COM{1-N|, \toptional  \tStreams to COM port." },
+	{ GPSFILE, 0, "g", "gpsfile", Arg::Optional, "  --gpsfile=input file from GPSEmulator, \toptional" },
+	{ FILEOUT2, 0, "o", "fileout", Arg::Optional, "  --fileout=json ouput file, \toptional, ublox JSON outputfile  \tIf empty, outputs to screen." },
 	{ FREQ, 0, "f", "freq", Arg::Optional, "  --freq=freq output in hz, \toptional" },
 	{ UNKNOWN, 0, "", "", option::Arg::None, "\nExamples:\n"
 	"  example --unknown -- --this_is_no_option\n"
@@ -627,7 +628,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	option::Option* buffer  = new option::Option[stats.buffer_max];
 	option::Parser parse(usage, argc, argv, options, buffer);
 
-	string filein, fileout, com, freq;
+	string filein, fileout, com, freq,gpsfile;
 
 	if (parse.error())
 	  return 1;
@@ -645,6 +646,11 @@ int _tmain(int argc, _TCHAR* argv[])
 		{
 		  case HELP:
 			// not possible, because handled further above and exits the program
+		  case GPSFILE:
+			  gpsfile = opt.arg;
+
+			  break;
+
 		  case COM:
 			  com = opt.arg;
 
@@ -655,7 +661,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 			  break;
 
-		  case FILEOUT:
+		  case FILEOUT2:
 			  if (opt.arg)
 			  {
 				  fileout = opt.arg;
@@ -684,6 +690,27 @@ int _tmain(int argc, _TCHAR* argv[])
 		}
 	  }
 
+	if (!gpsfile.empty())
+	{
+		cout << "emulation file given:"<<gpsfile<<" translating to JSON\n";
+
+
+		if (fileout.empty())
+		{
+			cout << "no output file given so to screen.\n";
+			//to screen
+
+		}
+		else
+		{
+			cout << "output file given:"<<fileout<<" \n";
+			toggleOut((char*)fileout.c_str());
+		}
+
+		LoadGPSEmulator((char*)gpsfile.c_str());
+
+	}
+
 	if (!filein.empty())
 	{
 
@@ -705,17 +732,23 @@ int _tmain(int argc, _TCHAR* argv[])
 
 		if (!fileout.empty())
 		{
-			cout << "we have an in and out\n";
-			cout << filein << " " << fileout << "\n";
-//			toggleOut((char*)fileout.c_str());
-//			LoadGPSEmulator((char*)filein.c_str());
+			cout << "we have an in and out, from binary to JSON\n";
+			cout << filein << "->" << fileout << "\n";
+			toggleOut((char*)fileout.c_str());
+			ifstream myfile(filein, ios::binary);
+			readit(myfile);
+
+			
+			//			LoadGPSEmulator((char*)filein.c_str());
 		}
 		else
 		{
 
 			cout << "Just filein:"<<filein << endl; // << " " << fileout << endl;
-//			LoadGPSEmulator((char*)filein.c_str()); //this will go to screen as there is no toggleout. 
+			ifstream myfile(filein, ios::binary);
+			readit(myfile);
 
+			
 		}
 
 	}
