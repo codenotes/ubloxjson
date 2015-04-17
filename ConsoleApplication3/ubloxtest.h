@@ -249,7 +249,7 @@ unsigned char data_llh[] = {// 0xB5, 0x62,
 
 };
 
-#define NAV_POSLLH_STRING "{\"NAV_POSLLH\":\n{\"TOW\":%d,\n\"lat\":%d,\n\"long\":%d,\n" \
+#define NAV_POSLLH_STRING "{\"NAV_POSLLH\":\n{\"iTOW\":%d,\n\"lat\":%d,\n\"long\":%d,\n" \
 	"\"height\":%d,\n\"hSML\":%d,\n\"hAcc\":%d,\n\"vAcc\":%d\n}},"
 
 
@@ -266,7 +266,7 @@ unsigned char data_llh[] = {// 0xB5, 0x62,
 
 #define NAV_STATUS_STRING \
 	"{\"NAV_STATUS\":\n{" \
-	"\"time:\":%d,\n"\
+	"\"iTOW:\":%d,\n"\
 	"\"fix_type\":%d,\n"\
 	"\"fix_status\":%d,\n"\
 	"\"differential_status\":%d,\n"\
