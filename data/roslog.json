@@ -1,0 +1,9 @@
+{
+"ros.ROSInterop":
+  {
+  "interop":{"level":0},
+  "superdebug":{"level":2},
+  "roscpp_internal":{"level":2},
+  "BaseNonNamedLogger":{"level":1}
+  }
+}
